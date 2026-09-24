@@ -1,0 +1,13 @@
+name: Test Ubuntu Runner
+
+on:
+  push:
+    branches: [ "main", "test-action" ]
+  workflow_dispatch:
+
+jobs:
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run a simple echo
+        run: echo "Hello World! If this runs, your Actions are working fine on Linux."

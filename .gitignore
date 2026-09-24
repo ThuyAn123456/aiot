@@ -1,0 +1,46 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+
+# File dữ liệu lớn
+*.zip
+*.ps1
+*.mp3
+
+# Tệp tạm Flutter / Android
+.dart_tool/
+build/
+*.dill
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Environment & Secrets
+.env
+*.env
+backend/.env
+*serviceAccountKey*.json
+
+# IDE
+.idea/
+.vscode/
+

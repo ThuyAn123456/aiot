@@ -34,9 +34,7 @@ build/
 node_modules/
 npm-debug.log*
 
-# Environment & Secrets
-.env
-*.env
+# Environment & Secrets (backend secrets are ignored)
 backend/.env
 *serviceAccountKey*.json
 

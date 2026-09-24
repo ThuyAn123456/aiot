@@ -26,6 +26,12 @@ jobs:
         with:
           channel: stable
 
+      - name: Ensure .env asset exists
+        run: |
+          if [ ! -f .env ]; then
+            echo "GOOGLE_WEB_CLIENT_ID=32405567233-dq6bf22r6lglf4hdafj0ibrqqjd8i15a.apps.googleusercontent.com" > .env
+          fi
+
       - name: Install Dependencies
         run: flutter pub get
 

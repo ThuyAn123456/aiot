@@ -71,24 +71,20 @@ class AuthService {
   }
 
   // ─── Register ─────────────────────────────────────────────────────────────
-  Future<void> requestRegisterOtp(String name, String email, String phone, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/check-pre-register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'phone': phone}),
-    ).timeout(const Duration(seconds: 10));
-    final data = jsonDecode(response.body);
-    if (response.statusCode != 200) throw Exception(data['message'] ?? 'Thông tin không hợp lệ');
-  }
-
-  Future<void> register(String name, String email, String phone, String password, String idToken) async {
+  Future<void> register(String name, String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/register'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'name': name, 'email': email, 'phone': phone, 'password': password, 'firebaseIdToken': idToken}),
+      body: jsonEncode({
+        'name': name,
+        'email': email,
+        'password': password,
+      }),
     ).timeout(const Duration(seconds: 10));
     final data = jsonDecode(response.body);
-    if (response.statusCode != 201) throw Exception(data['message'] ?? 'Đăng ký thất bại');
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(data['message'] ?? 'Đăng ký thất bại');
+    }
   }
 
   // ─── Forgot Password ──────────────────────────────────────────────────────

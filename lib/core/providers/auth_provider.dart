@@ -130,54 +130,13 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> requestRegisterOtp(String name, String email, String phone, String password) async {
+  Future<bool> register(String name, String email, String password) async {
     _status = AuthStatus.loading;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _authService.requestRegisterOtp(name, email, phone, password);
-
-      Completer<bool> completer = Completer<bool>();
-      String formattedPhone = phone;
-      if (phone.startsWith('0')) {
-        formattedPhone = '+84${phone.substring(1)}';
-      }
-
-      // Simulate OTP sent
-      _verificationId = 'mock_verification_id';
-      _status = AuthStatus.unauthenticated;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      if (kDebugMode) print("Lỗi: $e");
-      _status = AuthStatus.unauthenticated;
-      final errorStr = e.toString();
-      _errorMessage = errorStr.startsWith('Exception: ') 
-          ? errorStr.replaceAll('Exception: ', '') 
-          : 'Lỗi kết nối. Vui lòng kiểm tra mạng và thử lại!';
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> register(String name, String email, String phone, String password, String otp) async {
-    _status = AuthStatus.loading;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      if (_verificationId == null) throw Exception('Chưa có mã xác nhận, vui lòng thử lại');
-
-      if (otp != '123456') { // Mock OTP validation
-         throw Exception('Mã OTP không chính xác (Dùng 123456 để test)');
-      }
-
-      final idToken = 'mock_firebase_id_token_because_firebase_was_removed';
-
-      await _authService.register(name, email, phone, password, idToken);
-      
-      _verificationId = null;
+      await _authService.register(name, email, password);
 
       _status = AuthStatus.unauthenticated;
       notifyListeners();

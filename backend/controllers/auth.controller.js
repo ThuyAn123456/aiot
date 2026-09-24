@@ -19,11 +19,17 @@ const generateToken = (userId) => {
 exports.checkPreRegister = async (req, res) => {
   try {
     const { email, phone } = req.body;
-    if (!email || !phone) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp email và số điện thoại' });
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp email' });
     }
     
-    const existingUser = await User.findOne({ $or: [{ email: email.toLowerCase().trim() }, { phone: phone.trim() }] });
+    const filter = { email: email.toLowerCase().trim() };
+    if (phone && phone.trim()) {
+      filter.$or = [{ email: email.toLowerCase().trim() }, { phone: phone.trim() }];
+      delete filter.email;
+    }
+    
+    const existingUser = await User.findOne(filter);
     if (existingUser) {
       if (existingUser.email === email.toLowerCase().trim()) {
         return res.status(409).json({ success: false, message: 'Email đã được sử dụng' });
@@ -31,7 +37,7 @@ exports.checkPreRegister = async (req, res) => {
       return res.status(409).json({ success: false, message: 'Số điện thoại đã được sử dụng' });
     }
 
-    res.json({ success: true, message: 'Thông tin hợp lệ, có thể gửi OTP' });
+    res.json({ success: true, message: 'Thông tin hợp lệ' });
   } catch (err) {
     console.error('Check pre-register error:', err);
     res.status(500).json({ success: false, message: 'Lỗi server, vui lòng thử lại' });
@@ -41,44 +47,38 @@ exports.checkPreRegister = async (req, res) => {
 // POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { name, email, phone, password, firebaseIdToken } = req.body;
+    const { name, email, password, phone } = req.body;
 
-    if (!name || !email || !phone || !password || !firebaseIdToken) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ thông tin' });
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp họ tên, email và mật khẩu' });
     }
 
-    if (!isFirebaseInitialized) {
-      return res.status(500).json({ success: false, message: 'Tính năng OTP chưa được cấu hình trên Server. Vui lòng thêm serviceAccountKey.json' });
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Mật khẩu phải có ít nhất 6 ký tự' });
     }
 
-    let decodedToken;
-    try {
-      decodedToken = await getAuth().verifyIdToken(firebaseIdToken);
-    } catch (e) {
-      return res.status(400).json({ success: false, message: 'Xác thực mã OTP thất bại' });
-    }
-
-    const firebasePhone = decodedToken.phone_number;
-    let normalizedInputPhone = phone.trim();
-    if (normalizedInputPhone.startsWith('0')) {
-      normalizedInputPhone = '+84' + normalizedInputPhone.substring(1);
-    }
-
-    if (firebasePhone !== normalizedInputPhone) {
-      return res.status(400).json({ success: false, message: 'Số điện thoại xác thực không khớp với đăng ký' });
-    }
-
-    const existingUser = await User.findOne({ $or: [{ email: email.toLowerCase().trim() }, { phone: phone.trim() }] });
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
-      return res.status(409).json({ success: false, message: 'Email hoặc số điện thoại đã được sử dụng' });
+      return res.status(409).json({ success: false, message: 'Email đã được sử dụng' });
     }
 
-    const user = await User.create({
+    if (phone && phone.trim()) {
+      const existingPhone = await User.findOne({ phone: phone.trim() });
+      if (existingPhone) {
+        return res.status(409).json({ success: false, message: 'Số điện thoại đã được sử dụng' });
+      }
+    }
+
+    const userData = {
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      phone: phone.trim(),
       password,
-    });
+    };
+    if (phone && phone.trim()) {
+      userData.phone = phone.trim();
+    }
+
+    const user = await User.create(userData);
 
     await Device.create({ userId: user._id });
 

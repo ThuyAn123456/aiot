@@ -22,7 +22,14 @@ const userSchema = new mongoose.Schema({
     sparse: true,
     unique: true,
     trim: true,
-    match: [/^(0[3|5|7|8|9])+([0-9]{8})$/, 'Số điện thoại không hợp lệ'],
+    default: undefined,
+    validate: {
+      validator: function(v) {
+        if (!v) return true;
+        return /^(0[3|5|7|8|9])+([0-9]{8})$/.test(v);
+      },
+      message: 'Số điện thoại không hợp lệ',
+    },
   },
   password: {
     type: String,
@@ -85,9 +92,6 @@ const userSchema = new mongoose.Schema({
 // Validate conditionally based on provider
 userSchema.pre('validate', function(next) {
   if (this.provider === 'local') {
-    if (!this.phone) {
-      this.invalidate('phone', 'Số điện thoại không được để trống');
-    }
     if (!this.password && this.isNew) {
       this.invalidate('password', 'Mật khẩu không được để trống');
     }
